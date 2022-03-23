@@ -24,5 +24,14 @@ base_schema = {
         "value": Column(String),
         "unit": Column(String),
         "confidence": Column(String, default=None)
-        }
+        },
+    "event_schema.avsc": {
+        "user_id": Column(String),
+        "start_time": Column(TIMESTAMP),
+        "end_time": Column(TIMESTAMP),
+        "event_name": Column(String),
+        "source": Column(String),
+        "parameters": Column(String),
+        "unique_event_id": Column(String, primary_key=True)
+    }
 }

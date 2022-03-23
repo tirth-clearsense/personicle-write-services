@@ -5,11 +5,12 @@ from flask import session
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-from configparser import ConfigParser
+from config import DB_CREDENTIALS as database
+# from configparser import ConfigParser
 
-config_object = ConfigParser()
-config_object.read("config.ini")
-database = config_object["CREDENTIALS_DATABASE"]
+# config_object = ConfigParser()
+# config_object.read("config.ini")
+# database = config_object["CREDENTIALS_DATABASE"]
 
 logger = logging.getLogger(__name__)
 
