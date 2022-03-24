@@ -9,12 +9,12 @@
         },
         {
             "name": "start_time",
-            "type": "long",
+            "type": "string",
             "logicalType" : "timestamp-millis"
         },
         {
             "name": "end_time",
-            "type": "long",
+            "type": "string",
             "logicalType" : "timestamp-millis"
         },
         {

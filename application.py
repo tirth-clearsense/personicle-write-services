@@ -1,6 +1,6 @@
 from flask import Flask, Response, request
 import requests
-from config import IDENTITY_SERVER_SETTINGS, DATA_DICTIONARY_SERVER_SETTINGS, EVENTHUB_CONFIG, HOST_CONFIG
+from config import AVRO_SCHEMA_LOC, IDENTITY_SERVER_SETTINGS, DATA_DICTIONARY_SERVER_SETTINGS, EVENTHUB_CONFIG, HOST_CONFIG
 import json
 import os
 from producer import send_records_azure, send_datastreams_to_azure
@@ -16,14 +16,16 @@ def test_application():
 @app.route("/event/upload", methods=['POST'])
 def upload_event():
     """
-    Expect a well formatted event data packet
+    Expect a well formatted event data packet (list of events)
     Verify the access token in the request
     Verify the packet
     if verified then send to event hub
     else return a failure message
     """
     # authenticate the access token with okta api call
-    auth_headers = {}
+    auth_token = request.headers['Authorization']
+    auth_headers = {"Authorization": "{}".format(auth_token)}
+    print(auth_headers)
     print("sending request to: {}".format(IDENTITY_SERVER_SETTINGS['HOST_URL']+":"+IDENTITY_SERVER_SETTINGS["HOST_PORT"]+'/authenticate'))
     auth_response = requests.get(IDENTITY_SERVER_SETTINGS['HOST_URL']+":"+IDENTITY_SERVER_SETTINGS["HOST_PORT"]+'/authenticate', headers=auth_headers, verify=False)
     print(auth_response.text, auth_response.status_code)
@@ -35,16 +37,22 @@ def upload_event():
         event_data_packet = request.json
     else:
         return Response('Content-Type not supported!', 415)
-    
+    if type(event_data_packet) != type([]):
+        return Response("Array of events expected", 422)
     # verify the event packet by making the data dictionary api call
-    data_dict_params = {"data_type": "event"}
-    data_dict_response = requests.post(DATA_DICTIONARY_SERVER_SETTINGS['HOST_URL']+':'+DATA_DICTIONARY_SERVER_SETTINGS['HOST_PORT']+"/validate-data-packet", 
-        json=event_data_packet, params=data_dict_params)
-    if json.loads(data_dict_response.text).get("schema_check", False):
-        # send the data to azure event hub
-        schema_file = os.path.join(PROJ_LOC, "event_schema.avsc")
-        send_records_azure.send_records_to_eventhub(schema_file, event_data_packet, EVENTHUB_CONFIG['EVENTHUB_NAME'])
-        return Response("Sent {} records to database".format(len(event_data_packet)), 200)
+    send_records = []
+    for event in event_data_packet:
+        data_dict_params = {"data_type": "event"}
+        data_dict_response = requests.post(DATA_DICTIONARY_SERVER_SETTINGS['HOST_URL']+':'+DATA_DICTIONARY_SERVER_SETTINGS['HOST_PORT']+"/validate-data-packet", 
+            json=event, params=data_dict_params, verify=False)
+        print(data_dict_response.text)
+        if data_dict_response.status_code == requests.codes.ok and json.loads(data_dict_response.text).get("schema_check", False):
+            send_records.append(event)
+            # send the data to azure event hub
+    schema_file = os.path.join(AVRO_SCHEMA_LOC, "event_schema.avsc")
+    if len(send_records)> 0:
+        send_records_azure.send_records_to_eventhub(schema_file, send_records, EVENTHUB_CONFIG['EVENTHUB_NAME'])
+        return Response("Sent {} records to database".format(len(send_records)), 200)
     else:
         return Response("Incorrectly formatted data packet", 422)
 
@@ -77,7 +85,7 @@ def upload_datastream():
 
 @app.route("/event/delete", methods=["DELETE"])
 def delete_event():
-    """Receive a list of event ids to be deleted in th epost request json"""
+    """Receive a list of event ids to be deleted in the post request json"""
     pass
 
 @app.route("/event/update", methods=["POST"])
