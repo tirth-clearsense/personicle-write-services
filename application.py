@@ -1,4 +1,4 @@
-from flask import Flask, Response, request
+from flask import Flask, Response, jsonify, request
 import requests
 from config import AVRO_SCHEMA_LOC, IDENTITY_SERVER_SETTINGS, DATA_DICTIONARY_SERVER_SETTINGS, EVENTHUB_CONFIG, HOST_CONFIG
 import json
@@ -41,20 +41,26 @@ def upload_event():
         return Response("Array of events expected", 422)
     # verify the event packet by making the data dictionary api call
     send_records = []
+    send_summary = {}
     for event in event_data_packet:
         data_dict_params = {"data_type": "event"}
         data_dict_response = requests.post(DATA_DICTIONARY_SERVER_SETTINGS['HOST_URL']+':'+DATA_DICTIONARY_SERVER_SETTINGS['HOST_PORT']+"/validate-data-packet", 
             json=event, params=data_dict_params, verify=False)
         print(data_dict_response.text)
         if data_dict_response.status_code == requests.codes.ok and json.loads(data_dict_response.text).get("schema_check", False):
+            if 'event_name' in event:
+                send_summary[event['event_name']] = send_summary.get(event['event_name'], 0) + 1
             send_records.append(event)
+        else:
+            send_summary['incorrectly_formatted_events'] = send_summary.get('incorrectly_formatted_events', 0) + 1
             # send the data to azure event hub
     schema_file = os.path.join(AVRO_SCHEMA_LOC, "event_schema.avsc")
     if len(send_records)> 0:
         send_records_azure.send_records_to_eventhub(schema_file, send_records, EVENTHUB_CONFIG['EVENTHUB_NAME'])
-        return Response("Sent {} records to database".format(len(send_records)), 200)
-    else:
-        return Response("Incorrectly formatted data packet", 422)
+    return jsonify({"message": "Sent {} records to database".format(len(send_records)),
+                "summary": send_summary
+    })
+
 
 @app.route("/datastream/upload", methods=['POST'])
 def upload_datastream():
