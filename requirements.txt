@@ -20,10 +20,10 @@ MarkupSafe
 msal==1.17.0
 msal-extensions==0.3.1
 msrest==0.6.21
-numpy==1.22.3
+numpy
 oauthlib==3.2.0
 portalocker==2.4.0
-psycopg2==2.9.3
+psycopg2
 pycparser==2.21
 PyJWT==2.3.0
 requests==2.27.1
