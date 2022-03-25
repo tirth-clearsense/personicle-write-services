@@ -23,6 +23,7 @@ def upload_event():
     else return a failure message
     """
     # authenticate the access token with okta api call
+    # get user id from okta and make sure the ids match
     auth_token = request.headers['Authorization']
     auth_headers = {"Authorization": "{}".format(auth_token)}
     print(auth_headers)
@@ -31,7 +32,10 @@ def upload_event():
     print(auth_response.text, auth_response.status_code)
     if auth_response.status_code != requests.codes.ok or json.loads(auth_response.text).get("message", False)== False:
         return Response("Unauthorised access token", 401)
-
+    try:
+        user_id = json.loads(auth_response.text)['user_id']
+    except KeyError as e:
+        return Response("Incorrect response from auth server", 401)
     content_type = request.headers.get('Content-Type')
     if (content_type == 'application/json'):
         event_data_packet = request.json
@@ -48,9 +52,11 @@ def upload_event():
             json=event, params=data_dict_params, verify=False)
         print(data_dict_response.text)
         if data_dict_response.status_code == requests.codes.ok and json.loads(data_dict_response.text).get("schema_check", False):
-            if 'event_name' in event:
+            if user_id == event.get("individual_id", ""):
                 send_summary[event['event_name']] = send_summary.get(event['event_name'], 0) + 1
-            send_records.append(event)
+                send_records.append(event)
+            else:
+                send_summary['incorrect_user_id'] = send_summary.get('incorrect_user_id', 0) + 1
         else:
             send_summary['incorrectly_formatted_events'] = send_summary.get('incorrectly_formatted_events', 0) + 1
             # send the data to azure event hub
