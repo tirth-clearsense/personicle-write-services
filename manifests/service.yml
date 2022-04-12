@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+    name: "personiclecluster-9bb7"
+    labels:
+        app: "personiclecluster-9bb7"
+spec:
+    type: LoadBalancer
+    ports:
+    - port: 5004
+      targetPort: 5004
+      protocol: TCP
+      name: http
+    selector:
+        app: "personiclecluster-9bb7"
