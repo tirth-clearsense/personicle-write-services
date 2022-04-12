@@ -14,8 +14,8 @@ jobs:
     - name: Build and push image to ACR
       id: build-image
       run: |
-        docker build "$GITHUB_WORKSPACE/" -f  "Dockerfile" -t personicleauth.azurecr.io/personiclecluster:${{ github.sha }} --label dockerfile-path=Dockerfile
-        docker push personicleauth.azurecr.io/personiclecluster:${{ github.sha }}
+        docker build "$GITHUB_WORKSPACE/" -f  "Dockerfile" -t personicleauth.azurecr.io/personicle-write-service:${{ github.sha }} --label dockerfile-path=Dockerfile
+        docker push personicleauth.azurecr.io/personicle-write-service:${{ github.sha }}
     
     - uses: azure/k8s-set-context@v1
       with:
@@ -43,8 +43,7 @@ jobs:
         namespace: default
         manifests: |
           manifests/deployment.yml
-          manifests/service.yml
         images: |
-          personicleauth.azurecr.io/personiclecluster:${{ github.sha }}
+          personicleauth.azurecr.io/personicle-write-service:${{ github.sha }}
         imagepullsecrets: |
           personiclecldockerauth
