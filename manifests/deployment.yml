@@ -1,0 +1,145 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: personicle-write-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: personicle-write-service
+  template:
+    metadata:
+      labels:
+        app: personicle-write-service
+    spec:
+      containers:
+      - name: personicle-write-service
+        image: personicleauth.azurecr.io/personicle-write-service
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5004
+        env:
+        - name: USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: dbsecret
+              key: USERNAME
+        - name: PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: dbsecret
+              key: PASSWORD
+        - name: HOST
+          valueFrom:
+            secretKeyRef:
+              name: dbsecret
+              key: HOST
+        - name: NAME
+          valueFrom:
+            secretKeyRef:
+              name: dbsecret
+              key: NAME
+        - name: AUTH_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: dbsecret
+              key: AUTH_ENDPOINT
+        - name: INGESTION_PROD
+          valueFrom:
+            secretKeyRef:
+              name: dbsecret
+              key: INGESTION_PROD
+        - name: DATA_DICTIONARY_PORT
+          valueFrom:
+            secretKeyRef:
+              name: dbsecret
+              key: DATA_DICTIONARY_PORT
+        - name: DATA_DICTIONARY_HOST
+          valueFrom:
+            secretKeyRef:
+              name: dbsecret
+              key: DATA_DICTIONARY_HOST
+        - name: IDENTITY_SERVER_HOST
+          valueFrom:
+            secretKeyRef:
+              name: dbsecret
+              key: IDENTITY_SERVER_HOST
+        - name: IDENTITY_SERVER_PORT
+          valueFrom:
+            secretKeyRef:
+              name: dbsecret
+              key: IDENTITY_SERVER_PORT
+        - name: EVENTHUB_CONNECTION_STRING
+          valueFrom:
+            secretKeyRef:
+              name: dbsecret
+              key: EVENTHUB_CONNECTION_STRING
+        - name: EVENTHUB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: dbsecret
+              key: EVENTHUB_NAME
+        - name: EVENTHUB_SCHEMA_REGISTRY_FQNS
+          valueFrom:
+            secretKeyRef:
+              name: dbsecret
+              key: EVENTHUB_SCHEMA_REGISTRY_FQNS
+        - name: EVENTHUB_SCHEMA_REGISTRY_GROUP
+          valueFrom:
+            secretKeyRef:
+              name: dbsecret
+              key: EVENTHUB_SCHEMA_REGISTRY_GROUP
+        - name: DATASTREAM_EVENTHUB_CONNECTION_STRING
+          valueFrom:
+            secretKeyRef:
+              name: dbsecret
+              key: DATASTREAM_EVENTHUB_CONNECTION_STRING
+        - name: DATASTREAM_EVENTHUB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: dbsecret
+              key: DATASTREAM_EVENTHUB_NAME
+        - name: DATA_WRITE_SERVER_HOST
+          valueFrom:
+            secretKeyRef:
+              name: dbsecret
+              key: DATA_WRITE_SERVER_HOST
+        - name: DATA_WRITE_SERVER_PORT
+          valueFrom:
+            secretKeyRef:
+              name: dbsecret
+              key: DATA_WRITE_SERVER_PORT
+        - name: CREDENTIALS_DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: dbsecret
+              key: CREDENTIALS_DB_USER
+        - name: CREDENTIALS_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: dbsecret
+              key: CREDENTIALS_DB_PASSWORD
+        - name: CREDENTIALS_DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: dbsecret
+              key: CREDENTIALS_DB_HOST
+        - name: CREDENTIALS_DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: dbsecret
+              key: CREDENTIALS_DB_NAME
+               
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: personicle-write-service
+spec:
+  ports:
+  - port: 5004
+    name: schema-validation
+    protocol: TCP
+    targetPort: 5004
+  selector:
+    app: personicle-write-service
