@@ -1,0 +1,50 @@
+on: [push]
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    
+    - uses: azure/docker-login@v1
+      with:
+        login-server: personicleservices.azurecr.io
+        username: ${{ secrets.acr_personicleservices_username }}
+        password: ${{ secrets.acr_personicleservices_password }}
+    
+    - name: Build and push image to ACR
+      id: build-image
+      run: |
+        docker build "$GITHUB_WORKSPACE/" -f  "Dockerfile" -t personicleservices.azurecr.io/akspersonicledev:${{ github.sha }} --label dockerfile-path=Dockerfile
+        docker push personicleservices.azurecr.io/akspersonicledev:${{ github.sha }}
+    
+    - uses: azure/k8s-set-context@v1
+      with:
+         kubeconfig: ${{ secrets.aks_akspersonicledev_kubeConfig }}
+      id: login
+    
+    - name: Create namespace
+      run: |
+        namespacePresent=`kubectl get namespace | grep aks-personicle-devb9de | wc -l`
+        if [ $namespacePresent -eq 0 ]
+        then
+            echo `kubectl create namespace aks-personicle-devb9de`
+        fi
+
+    - uses: azure/k8s-create-secret@v1
+      with:
+        namespace: aks-personicle-devb9de
+        container-registry-url: personicleservices.azurecr.io
+        container-registry-username: ${{ secrets.acr_personicleservices_username }}
+        container-registry-password: ${{ secrets.acr_personicleservices_password }}
+        secret-name: akspersonicldockerauth
+       
+    - uses: azure/k8s-deploy@v1.2
+      with:
+        namespace: aks-personicle-devb9de
+        manifests: |
+          manifests/deployment-1.yml
+          manifests/service.yml
+        images: |
+          personicleservices.azurecr.io/akspersonicledev:${{ github.sha }}
+        imagepullsecrets: |
+          akspersonicldockerauth
