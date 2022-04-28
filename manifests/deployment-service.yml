@@ -22,112 +22,112 @@ spec:
         - name: USERNAME
           valueFrom:
             secretKeyRef:
-              name: dbsecret
+              name: secrets
               key: USERNAME
         - name: PASSWORD
           valueFrom:
             secretKeyRef:
-              name: dbsecret
+              name: secrets
               key: PASSWORD
         - name: HOST
           valueFrom:
             secretKeyRef:
-              name: dbsecret
+              name: secrets
               key: HOST
         - name: NAME
           valueFrom:
             secretKeyRef:
-              name: dbsecret
+              name: secrets
               key: NAME
         - name: AUTH_ENDPOINT
           valueFrom:
             secretKeyRef:
-              name: dbsecret
+              name: secrets
               key: AUTH_ENDPOINT
         - name: INGESTION_PROD
           valueFrom:
             secretKeyRef:
-              name: dbsecret
+              name: secrets
               key: INGESTION_PROD
         - name: DATA_DICTIONARY_PORT
           valueFrom:
             secretKeyRef:
-              name: dbsecret
+              name: secrets
               key: DATA_DICTIONARY_PORT
         - name: DATA_DICTIONARY_HOST
           valueFrom:
             secretKeyRef:
-              name: dbsecret
+              name: secrets
               key: DATA_DICTIONARY_HOST
         - name: IDENTITY_SERVER_HOST
           valueFrom:
             secretKeyRef:
-              name: dbsecret
+              name: secrets
               key: IDENTITY_SERVER_HOST
         - name: IDENTITY_SERVER_PORT
           valueFrom:
             secretKeyRef:
-              name: dbsecret
+              name: secrets
               key: IDENTITY_SERVER_PORT
         - name: EVENTHUB_CONNECTION_STRING
           valueFrom:
             secretKeyRef:
-              name: dbsecret
+              name: secrets
               key: EVENTHUB_CONNECTION_STRING
         - name: EVENTHUB_NAME
           valueFrom:
             secretKeyRef:
-              name: dbsecret
+              name: secrets
               key: EVENTHUB_NAME
         - name: EVENTHUB_SCHEMA_REGISTRY_FQNS
           valueFrom:
             secretKeyRef:
-              name: dbsecret
+              name: secrets
               key: EVENTHUB_SCHEMA_REGISTRY_FQNS
         - name: EVENTHUB_SCHEMA_REGISTRY_GROUP
           valueFrom:
             secretKeyRef:
-              name: dbsecret
+              name: secrets
               key: EVENTHUB_SCHEMA_REGISTRY_GROUP
         - name: DATASTREAM_EVENTHUB_CONNECTION_STRING
           valueFrom:
             secretKeyRef:
-              name: dbsecret
+              name: secrets
               key: DATASTREAM_EVENTHUB_CONNECTION_STRING
         - name: DATASTREAM_EVENTHUB_NAME
           valueFrom:
             secretKeyRef:
-              name: dbsecret
+              name: secrets
               key: DATASTREAM_EVENTHUB_NAME
         - name: DATA_WRITE_SERVER_HOST
           valueFrom:
             secretKeyRef:
-              name: dbsecret
+              name: secrets
               key: DATA_WRITE_SERVER_HOST
         - name: DATA_WRITE_SERVER_PORT
           valueFrom:
             secretKeyRef:
-              name: dbsecret
+              name: secrets
               key: DATA_WRITE_SERVER_PORT
         - name: CREDENTIALS_DB_USER
           valueFrom:
             secretKeyRef:
-              name: dbsecret
+              name: secrets
               key: CREDENTIALS_DB_USER
         - name: CREDENTIALS_DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: dbsecret
+              name: secrets
               key: CREDENTIALS_DB_PASSWORD
         - name: CREDENTIALS_DB_HOST
           valueFrom:
             secretKeyRef:
-              name: dbsecret
+              name: secrets
               key: CREDENTIALS_DB_HOST
         - name: CREDENTIALS_DB_NAME
           valueFrom:
             secretKeyRef:
-              name: dbsecret
+              name: secrets
               key: CREDENTIALS_DB_NAME
                
 ---
