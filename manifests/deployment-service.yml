@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: personicle-write-service
-        image: personicleauth.azurecr.io/personicle-write-service
+        image:  personicleservices.azurecr.io/personicle-write-service
         imagePullPolicy: Always
         ports:
         - containerPort: 5004
