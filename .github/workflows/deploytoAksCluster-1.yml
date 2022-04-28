@@ -24,15 +24,15 @@ jobs:
     
     - name: Create namespace
       run: |
-        namespacePresent=`kubectl get namespace | grep aks-personicle-devb9de | wc -l`
+        namespacePresent=`kubectl get namespace | grep default | wc -l`
         if [ $namespacePresent -eq 0 ]
         then
-            echo `kubectl create namespace aks-personicle-devb9de`
+            echo `kubectl create namespace default`
         fi
 
     - uses: azure/k8s-create-secret@v1
       with:
-        namespace: aks-personicle-devb9de
+        namespace: default
         container-registry-url: personicleservices.azurecr.io
         container-registry-username: ${{ secrets.acr_personicleservices_username }}
         container-registry-password: ${{ secrets.acr_personicleservices_password }}
@@ -40,10 +40,9 @@ jobs:
        
     - uses: azure/k8s-deploy@v1.2
       with:
-        namespace: aks-personicle-devb9de
+        namespace: default
         manifests: |
-          manifests/deployment-1.yml
-          manifests/service.yml
+          manifests/deployment-service.yml
         images: |
           personicleservices.azurecr.io/personicle-write-service:${{ github.sha }}
         imagepullsecrets: |
