@@ -34,12 +34,12 @@ else:
     try:
         DATA_DICTIONARY_SERVER_SETTINGS = {
             'HOST_URL': os.environ.get('DATA_DICTIONARY_HOST', "0.0.0.0"),
-            'HOST_PORT': os.environ.get('DATA_DICTIONARY_PORT', 5001)
+            'HOST_PORT': os.environ.get('DATA_DICTIONARY_PORT', 5002)
         }
 
         IDENTITY_SERVER_SETTINGS = {
             'HOST_URL': os.environ.get('IDENTITY_SERVER_HOST', "0.0.0.0"),
-            'HOST_PORT': os.environ.get('IDENTITY_SERVER_PORT', 5002)
+            'HOST_PORT': os.environ.get('IDENTITY_SERVER_PORT', 5000)
         }
 
         EVENTHUB_CONFIG = {
