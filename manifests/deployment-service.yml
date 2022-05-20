@@ -138,7 +138,7 @@ metadata:
 spec:
   ports:
   - port: 5004
-    name: schema-validation
+    name: write-service
     protocol: TCP
     targetPort: 5004
   selector:
