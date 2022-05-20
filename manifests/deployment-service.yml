@@ -129,6 +129,16 @@ spec:
             secretKeyRef:
               name: secrets
               key: CREDENTIALS_DB_NAME
+         - name: IDENTITY_SERVER_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: secrets
+              key: IDENTITY_SERVER_ENDPOINT
+         - name: DATA_DICTIONARY_SERVER_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: secrets
+              key: DATA_DICTIONARY_SERVER_ENDPOINT
                
 ---
 apiVersion: v1
