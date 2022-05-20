@@ -33,12 +33,12 @@ else:
     print("in the prod environment")
     try:
         DATA_DICTIONARY_SERVER_SETTINGS = {
-            'HOST_URL': os.environ.get('DATA_DICTIONARY_HOST', "0.0.0.0"),
+            'HOST_URL': os.environ.get('DATA_DICTIONARY_SERVER_ENDPOINT', "0.0.0.0"),
             'HOST_PORT': os.environ.get('DATA_DICTIONARY_PORT', 5002)
         }
 
         IDENTITY_SERVER_SETTINGS = {
-            'HOST_URL': os.environ.get('IDENTITY_SERVER_HOST', "0.0.0.0"),
+            'HOST_URL': os.environ.get('IDENTITY_SERVER_ENDPOINT', "0.0.0.0"),
             'HOST_PORT': os.environ.get('IDENTITY_SERVER_PORT', 5000)
         }
 
