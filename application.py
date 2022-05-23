@@ -1,6 +1,6 @@
 from flask import Flask, Response, jsonify, request
 import requests
-from config import AVRO_SCHEMA_LOC, IDENTITY_SERVER_SETTINGS, DATA_DICTIONARY_SERVER_SETTINGS, EVENTHUB_CONFIG, HOST_CONFIG
+from config import AVRO_SCHEMA_LOC, IDENTITY_SERVER_SETTINGS, DATA_DICTIONARY_SERVER_SETTINGS, EVENTHUB_CONFIG, HOST_CONFIG, PERSONICLE_SCHEMA_API
 import json
 import os
 from producer import send_records_azure, send_datastreams_to_azure
@@ -108,6 +108,61 @@ def upload_datastream():
         return Response("Sent {} records to database".format(len(data_packet)), 200)
     else:
         return Response("Incorrectly formatted data packet", 422)
+@app.route("/datastream/delete", methods=["DELETE"])
+@ValidateParameters()
+def delete_datastream(user_id: str=Query(), stream_name: str=Query(), start_time: Optional[str]=Query(), end_time: Optional[str]=Query()):
+    auth_token = request.headers['Authorization']
+    auth_headers = {"Authorization": "{}".format(auth_token)}
+    print("sending request to: {}".format(IDENTITY_SERVER_SETTINGS['HOST_URL']+"/auth/authenticate"))
+    auth_response = requests.get(IDENTITY_SERVER_SETTINGS['HOST_URL']+"/auth/authenticate", headers=auth_headers)
+    print(auth_response.text, auth_response.status_code)
+    if auth_response.status_code == 401:
+        return Response("Unauthorized", 401)
+    try:
+        count = 0
+        u_id = auth_response.json()['user_id']
+        stream_names = list(map(lambda e: e.lower(),request.args['stream_name'].split(";") ))
+        for stream in stream_names:
+            params = {'data_type': 'datastream','stream_name': stream}
+            schema_response = requests.get(PERSONICLE_SCHEMA_API['MATCH_DICTIONARY_ENDPOINT']+"/match-data-dictionary",params=params)
+            if not schema_response.status_code == 200:
+                return jsonify({"error": "One of the stream name not found "}),400
+            stream_information = schema_response.json()
+
+            start_time_query = request.args.get('start_time',None)
+            end_time_query = request.args.get('end_time',None)
+            try:
+                start_time_object = datetime.strptime(start_time_query,'%Y-%m-%d %H:%M:%S') if start_time_query is not None else None
+                end_time_object = datetime.strptime(end_time_query,'%Y-%m-%d %H:%M:%S') if end_time_query is not None else None
+            except ValueError:
+                    return Response("start_time and end_time should be in %Y-%m-%d %H:%M:%S format", 400)
+
+            table_name = stream_information['TableName']
+            model_class = generate_table_class(table_name, copy.deepcopy(base_schema[stream_information['base_schema']]))
+            if start_time_query is not None:
+            
+                if end_time_query is not None:
+                    query = model_class.__table__.delete().where( (model_class.individual_id == u_id)  & 
+                    (model_class.timestamp.between(start_time_object,end_time_object)))
+                else : 
+                    query = model_class.__table__.delete().where( (model_class.individual_id == u_id) & (model_class.timestamp >= start_time_object ))
+
+            elif start_time_query is None and end_time_query is not None:
+                    query = model_class.__table__.delete().where( (model_class.individual_id == u_id) & (model_class.timestamp <= end_time_object ))
+            else:
+                # no start and end time specified, delete all events specified
+                query = model_class.__table__.delete().where( (model_class.individual_id == u_id) )
+            result = session.execute(query)
+            count+=result.rowcount
+            session.commit()
+        
+        if count > 0:
+            return jsonify({"message": f"Deleted {count} {p.plural('datastream'),count}"}),200
+        else:
+            return jsonify({"message": f" One or more data stream not deleted. No such data stream found"}), 400
+    except requests.exceptions.RequestException as e:
+        print(e)
+
 
 @app.route("/event/delete", methods=["DELETE"])
 @ValidateParameters()
@@ -133,7 +188,7 @@ def delete_event(user_id: str=Query(), event_type: Optional[str]=Query(), event_
 
         start_time_query = request.args.get('start_time',None)
         end_time_query = request.args.get('end_time',None)
-      
+        
         model_class = generate_table_class(EVENTS_TABLE, copy.deepcopy(base_schema[EVENTS_SCHEMA]))
         
         if event_ids:
