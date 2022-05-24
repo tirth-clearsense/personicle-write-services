@@ -168,6 +168,7 @@ def delete_datastream(user_id: str=Query(), stream_name: str=Query(), start_time
 @ValidateParameters()
 def delete_event(user_id: str=Query(), event_type: Optional[str]=Query(), event_id: Optional[str]=Query(), start_time: Optional[str]=Query(), end_time: Optional[str]=Query()):
     auth_token = request.headers['Authorization']
+    print("in /event/delete")
     auth_headers = {"Authorization": "{}".format(auth_token)}
     print("sending request to: {}".format(IDENTITY_SERVER_SETTINGS['HOST_URL']+"/auth/authenticate"))
     auth_response = requests.get(IDENTITY_SERVER_SETTINGS['HOST_URL']+"/auth/authenticate", headers=auth_headers)
@@ -266,7 +267,7 @@ def delete_account():
     if auth_response.status_code == 401:
         return jsonify({"error": "Unauthorized"}), 401
     u_id = auth_response.json()['user_id']
-   
+    print("here")
     # delete_user_events = requests.delete(f"http://127.0.0.1:5000/event/delete?user_id={u_id}",headers=auth_headers)
     delete_user_events = requests.delete(f"{HOST_CONFIG['STAGING_URL']}/event/delete?user_id={u_id}",headers=auth_headers)
 
