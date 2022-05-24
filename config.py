@@ -28,7 +28,7 @@ if int(os.environ.get("INGESTION_PROD", '0')) != 1:
     PERSONICLE_SCHEMA_API = __app_config['PERSONICLE_SCHEMA_API']
     HOST_CONFIG = __app_config['DATA_WRITE_SERVICE']
     DB_CREDENTIALS = __app_config['CREDENTIALS_DATABASE']
-
+    DELETE_USER= __app_config['DELETE_USER']
 else:
     print("in the prod environment")
     try:

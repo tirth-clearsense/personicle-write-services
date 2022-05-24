@@ -1,6 +1,6 @@
 from flask import Flask, Response, jsonify, request
 import requests
-from config import AVRO_SCHEMA_LOC, IDENTITY_SERVER_SETTINGS, DATA_DICTIONARY_SERVER_SETTINGS, EVENTHUB_CONFIG, HOST_CONFIG, PERSONICLE_SCHEMA_API
+from config import AVRO_SCHEMA_LOC, IDENTITY_SERVER_SETTINGS, DATA_DICTIONARY_SERVER_SETTINGS, EVENTHUB_CONFIG, HOST_CONFIG,DELETE_USER, PERSONICLE_SCHEMA_API
 import json
 import os
 from producer import send_records_azure, send_datastreams_to_azure
@@ -176,8 +176,10 @@ def delete_event(user_id: str=Query(), event_type: Optional[str]=Query(), event_
         return Response("Unauthorized", 401)
     args = request.args
     # print(args)
+    delete__header = request.headers.get('DELETE_DATA', None)
+    
     try:
-        if event_type is None and event_id is None:
+        if event_type is None and event_id is None and delete__header is None:
             return jsonify({"error": "event_id or event_type should be specified"}),400
         elif event_type is not None and event_id is not None:
             return jsonify({"error": "Either event_id or event_type should be included but not both"}),400
@@ -190,7 +192,17 @@ def delete_event(user_id: str=Query(), event_type: Optional[str]=Query(), event_
         end_time_query = request.args.get('end_time',None)
         
         model_class = generate_table_class(EVENTS_TABLE, copy.deepcopy(base_schema[EVENTS_SCHEMA]))
-        
+        if delete__header == DELETE_USER['DELETE_USER_TOKEN']:
+            delete_all_user_info_query =  model_class.__table__.delete().where( (model_class.user_id == u_id))
+            result = session.execute(delete_all_user_info_query)
+            total_deleted_events = result.rowcount
+            if total_deleted_events != 0:
+                session.commit()
+                return jsonify({"message": f"Deleted {total_deleted_events}  {p.plural('event'),total_deleted_events}" }),200
+            else:
+                session.rollback()
+                return jsonify({"message": f"No events found/deleted"}), 400
+
         if event_ids:
             query = model_class.__table__.delete().where( (model_class.user_id == u_id) & (model_class.unique_event_id.in_(event_ids)))
             result = session.execute(query)
@@ -242,9 +254,43 @@ def delete_event(user_id: str=Query(), event_type: Optional[str]=Query(), event_
 def update_event():
     pass
 
+@app.route('/account/delete', methods=["DELETE"])
+@ValidateParameters()
+def delete_account():
+    auth_token = request.headers['Authorization']
+    auth_headers = {"Authorization": "{}".format(auth_token),
+                    "DELETE_DATA": DELETE_USER['DELETE_USER_TOKEN']
+                   }
+    auth_response = requests.get(IDENTITY_SERVER_SETTINGS['HOST_URL']+"/auth/authenticate", headers=auth_headers)
+    
+    if auth_response.status_code == 401:
+        return jsonify({"error": "Unauthorized"}), 401
+    u_id = auth_response.json()['user_id']
+   
+    # delete_user_events = requests.delete(f"http://127.0.0.1:5000/event/delete?user_id={u_id}",headers=auth_headers)
+    delete_user_events = requests.delete(f"{HOST_CONFIG['STAGING_URL']}/event/delete?user_id={u_id}",headers=auth_headers)
+
+    delete_user_headers = {"Authorization": DELETE_USER['DELETE_USER_TOKEN']}
+    deactivate_user_account = requests.delete(f"{DELETE_USER['API_ENDPOINT']}/{u_id}?sendEmail=true",headers=delete_user_headers)
+    if delete_user_events.status_code == 200 and deactivate_user_account.status_code == 204:
+        return delete_user_account(u_id,delete_user_headers,events_found=True)
+    elif delete_user_events.status_code != 200 and  deactivate_user_account.status_code == 204:
+        return delete_user_account(u_id,delete_user_headers)
+    return jsonify({"error": f"Unable to delete {u_id} or user data"}), 400
+
+def delete_user_account(u_id,delete_user_headers,events_found=None):
+    delete_user_account = requests.delete(f"{DELETE_USER['API_ENDPOINT']}/{u_id}?sendEmail=true",headers=delete_user_headers)
+    if events_found:
+        if delete_user_account.status_code == 204:
+                return jsonify({"message": f"User {u_id} deleted and all data deleted"}), 200
+        return jsonify({"message": f"User {u_id} deactivated and all data deleted"}), 200
+    else :
+        if delete_user_account.status_code == 204:
+                return jsonify({"message": f"User {u_id} DELETED. No data found to be deleted"}), 200
+        return jsonify({"message": f"User {u_id} DEACTIVATED. No data found to be deleted"}), 200
 
 if __name__ == "__main__":
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
     print("running server on {}:{}".format(HOST_CONFIG['HOST_URL'], HOST_CONFIG['HOST_PORT']))
     app.run(HOST_CONFIG['HOST_URL'], port=HOST_CONFIG['HOST_PORT'], debug=True)#, ssl_context='adhoc')
-#     app.run(debug=True)
+    # app.run(debug=True)
