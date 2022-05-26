@@ -90,6 +90,7 @@ def upload_datastream():
     auth_headers = {}
     print("sending request to: {}".format(IDENTITY_SERVER_SETTINGS['HOST_URL']+":"+IDENTITY_SERVER_SETTINGS["HOST_PORT"]+'/authenticate'))
     auth_response = requests.get(IDENTITY_SERVER_SETTINGS['HOST_URL']+":"+IDENTITY_SERVER_SETTINGS["HOST_PORT"]+'/authenticate', headers=auth_headers, verify=False)
+    
     print(auth_response.text, auth_response.status_code)
     if auth_response.status_code != requests.codes.ok or json.loads(auth_response.text).get("message", False)== False:
         return Response("Unauthorised access token", 401)
@@ -115,8 +116,8 @@ def upload_datastream():
 def delete_datastream(user_id: str=Query(), stream_name: str=Query(), start_time: Optional[str]=Query(), end_time: Optional[str]=Query()):
     auth_token = request.headers['Authorization']
     auth_headers = {"Authorization": "{}".format(auth_token)}
-    print("sending request to: {}".format(IDENTITY_SERVER_SETTINGS['HOST_URL']+"/auth/authenticate"))
-    auth_response = requests.get(IDENTITY_SERVER_SETTINGS['HOST_URL']+"/auth/authenticate", headers=auth_headers)
+    print("sending request to: {}".format(IDENTITY_SERVER_SETTINGS['PERSONICLE_AUTH_API_ENDPOINT']+"/auth/authenticate"))
+    auth_response = requests.get(IDENTITY_SERVER_SETTINGS['PERSONICLE_AUTH_API_ENDPOINT']+"/auth/authenticate", headers=auth_headers)
     print(auth_response.text, auth_response.status_code)
     if auth_response.status_code == 401:
         return Response("Unauthorized", 401)
@@ -244,9 +245,9 @@ def delete_event(user_id: str=Query(), event_type: Optional[str]=Query(), event_
     auth_token = request.headers['Authorization']
     print("in /event/delete")
     auth_headers = {"Authorization": "{}".format(auth_token)}
-    print("sending request to: {}".format(IDENTITY_SERVER_SETTINGS['HOST_URL']+"/auth/authenticate"))
-    logging.info("sending request to: {}".format(IDENTITY_SERVER_SETTINGS['HOST_URL']+"/auth/authenticate"))
-    auth_response = requests.get(IDENTITY_SERVER_SETTINGS['HOST_URL']+"/auth/authenticate", headers=auth_headers)
+    print("sending request to: {}".format(IDENTITY_SERVER_SETTINGS['PERSONICLE_AUTH_API_ENDPOINT']+"/auth/authenticate"))
+    logging.info("sending request to: {}".format(IDENTITY_SERVER_SETTINGS['PERSONICLE_AUTH_API_ENDPOINT']+"/auth/authenticate"))
+    auth_response = requests.get(IDENTITY_SERVER_SETTINGS['PERSONICLE_AUTH_API_ENDPOINT']+"/auth/authenticate", headers=auth_headers)
     print(auth_response.text, auth_response.status_code)
     if auth_response.status_code == 401:
         return Response("Unauthorized", 401)

@@ -39,9 +39,13 @@ else:
 
         IDENTITY_SERVER_SETTINGS = {
             'HOST_URL': os.environ.get('IDENTITY_SERVER_HOST', "0.0.0.0"),
-            'HOST_PORT': os.environ.get('IDENTITY_SERVER_PORT', 5002)
+            'HOST_PORT': os.environ.get('IDENTITY_SERVER_PORT', 5002),
+            'PERSONICLE_AUTH_API_ENDPOINT': os.environ['PERSONICLE_AUTH_API_ENDPOINT']
         }
-
+        DELETE_USER = {
+            'API_ENDPOINT': os.environ['DELETE_USER_API_ENDPOINT'],
+            'DELETE_USER_TOKEN': os.environ['DELETE_USER_TOKEN']
+        }
         EVENTHUB_CONFIG = {
             'CONNECTION_STRING': os.environ['EVENTHUB_CONNECTION_STRING'],
             'EVENTHUB_NAME': os.environ['EVENTHUB_NAME'],
