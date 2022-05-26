@@ -34,3 +34,5 @@ typing_extensions==4.1.1
 uamqp==1.5.2
 urllib3==1.26.9
 Werkzeug==2.0.3
+flask_parameter_validation
+inflect

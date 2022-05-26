@@ -129,6 +129,16 @@ spec:
             secretKeyRef:
               name: secrets
               key: CREDENTIALS_DB_NAME
+        - name: DELETE_USER_API_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: secrets
+              key: DELETE_USER_API_ENDPOINT
+        - name: DELETE_USER_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: secrets
+              key: DELETE_USER_TOKEN
         - name: IDENTITY_SERVER_ENDPOINT
           valueFrom:
             secretKeyRef:

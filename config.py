@@ -25,10 +25,10 @@ if int(os.environ.get("INGESTION_PROD", '0')) != 1:
     DATA_DICTIONARY_SERVER_SETTINGS = __app_config['DATA_DICTIONARY_SERVER']
     IDENTITY_SERVER_SETTINGS = __app_config['IDENTITY_SERVER']
     EVENTHUB_CONFIG = __app_config['EVENTHUB']
-
+    PERSONICLE_SCHEMA_API = __app_config['PERSONICLE_SCHEMA_API']
     HOST_CONFIG = __app_config['DATA_WRITE_SERVICE']
     DB_CREDENTIALS = __app_config['CREDENTIALS_DATABASE']
-
+    DELETE_USER= __app_config['DELETE_USER']
 else:
     print("in the prod environment")
     try:
@@ -38,10 +38,14 @@ else:
         }
 
         IDENTITY_SERVER_SETTINGS = {
-            'HOST_URL': os.environ.get('IDENTITY_SERVER_ENDPOINT', "0.0.0.0"),
-            'HOST_PORT': os.environ.get('IDENTITY_SERVER_PORT', 5000)
+            'HOST_URL': os.environ.get('IDENTITY_SERVER_HOST', "0.0.0.0"),
+            'HOST_PORT': os.environ.get('IDENTITY_SERVER_PORT', 5002),
+            'PERSONICLE_AUTH_API_ENDPOINT': os.environ['PERSONICLE_AUTH_API_ENDPOINT']
         }
-
+        DELETE_USER = {
+            'API_ENDPOINT': os.environ['DELETE_USER_API_ENDPOINT'],
+            'DELETE_USER_TOKEN': os.environ['DELETE_USER_TOKEN']
+        }
         EVENTHUB_CONFIG = {
             'CONNECTION_STRING': os.environ['EVENTHUB_CONNECTION_STRING'],
             'EVENTHUB_NAME': os.environ['EVENTHUB_NAME'],
