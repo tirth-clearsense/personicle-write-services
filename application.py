@@ -43,8 +43,8 @@ def upload_event():
     auth_token = request.headers['Authorization']
     auth_headers = {"Authorization": "{}".format(auth_token)}
     print(auth_headers)
-    print("sending request to: {}".format(IDENTITY_SERVER_SETTINGS['HOST_URL']+":"+IDENTITY_SERVER_SETTINGS["HOST_PORT"]+'/authenticate'))
-    auth_response = requests.get(IDENTITY_SERVER_SETTINGS['HOST_URL']+":"+IDENTITY_SERVER_SETTINGS["HOST_PORT"]+'/authenticate', headers=auth_headers, verify=False)
+    print("sending request to: {}".format(IDENTITY_SERVER_SETTINGS['HOST_URL']+'/authenticate'))
+    auth_response = requests.get(IDENTITY_SERVER_SETTINGS['HOST_URL']+'/authenticate', headers=auth_headers)
     print(auth_response.text, auth_response.status_code)
     if auth_response.status_code != requests.codes.ok or json.loads(auth_response.text).get("message", False)== False:
         return Response("Unauthorised access token", 401)
@@ -64,8 +64,8 @@ def upload_event():
     send_summary = {}
     for event in event_data_packet:
         data_dict_params = {"data_type": "event"}
-        data_dict_response = requests.post(DATA_DICTIONARY_SERVER_SETTINGS['HOST_URL']+':'+DATA_DICTIONARY_SERVER_SETTINGS['HOST_PORT']+"/validate-data-packet", 
-            json=event, params=data_dict_params, verify=False)
+        data_dict_response = requests.post(DATA_DICTIONARY_SERVER_SETTINGS['HOST_URL']+"/validate-data-packet", 
+            json=event, params=data_dict_params)
         print(data_dict_response.text)
         if data_dict_response.status_code == requests.codes.ok and json.loads(data_dict_response.text).get("schema_check", False):
             if user_id == event.get("individual_id", ""):
@@ -88,9 +88,9 @@ def upload_event():
 def upload_datastream():
     # authenticate the access token with okta api call
     auth_headers = {}
-    print("sending request to: {}".format(IDENTITY_SERVER_SETTINGS['HOST_URL']+":"+IDENTITY_SERVER_SETTINGS["HOST_PORT"]+'/authenticate'))
-    auth_response = requests.get(IDENTITY_SERVER_SETTINGS['HOST_URL']+":"+IDENTITY_SERVER_SETTINGS["HOST_PORT"]+'/authenticate', headers=auth_headers, verify=False)
-    
+
+    print("sending request to: {}".format(IDENTITY_SERVER_SETTINGS['HOST_URL']+'/authenticate'))
+    auth_response = requests.get(IDENTITY_SERVER_SETTINGS['HOST_URL']+'/authenticate', headers=auth_headers)
     print(auth_response.text, auth_response.status_code)
     if auth_response.status_code != requests.codes.ok or json.loads(auth_response.text).get("message", False)== False:
         return Response("Unauthorised access token", 401)
@@ -103,7 +103,7 @@ def upload_datastream():
     
     # verify the event packet by making the data dictionary api call
     data_dict_params = {"data_type": "datastream"}
-    data_dict_response = requests.post(DATA_DICTIONARY_SERVER_SETTINGS['HOST_URL']+':'+DATA_DICTIONARY_SERVER_SETTINGS['HOST_PORT']+"/validate-data-packet", 
+    data_dict_response = requests.post(DATA_DICTIONARY_SERVER_SETTINGS['HOST_URL']+"/validate-data-packet", 
         json=data_packet, params=data_dict_params)
     if json.loads(data_dict_response.text).get("schema_check", False):
         # send the datastream to azure event hub
@@ -308,5 +308,6 @@ def delete_user_account(u_id,delete_user_headers,events_found=None):
 if __name__ == "__main__":
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
     print("running server on {}:{}".format(HOST_CONFIG['HOST_URL'], HOST_CONFIG['HOST_PORT']))
+
     app.run(HOST_CONFIG['HOST_URL'], port=HOST_CONFIG['HOST_PORT'], debug=True)#, ssl_context='adhoc')
-    # app.run(debug=True)
+   

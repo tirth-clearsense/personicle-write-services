@@ -139,6 +139,16 @@ spec:
             secretKeyRef:
               name: secrets
               key: DELETE_USER_TOKEN
+        - name: IDENTITY_SERVER_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: secrets
+              key: IDENTITY_SERVER_ENDPOINT
+        - name: DATA_DICTIONARY_SERVER_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: secrets
+              key: DATA_DICTIONARY_SERVER_ENDPOINT
                
 ---
 apiVersion: v1
@@ -148,7 +158,7 @@ metadata:
 spec:
   ports:
   - port: 5004
-    name: schema-validation
+    name: write-service
     protocol: TCP
     targetPort: 5004
   selector:
