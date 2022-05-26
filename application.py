@@ -276,7 +276,7 @@ def delete_account():
 
     logging.info(f"{HOST_CONFIG['STAGING_URL']}/event/delete?user_id={u_id}")
     # delete_user_events = requests.delete(f"http://127.0.0.1:5000/event/delete?user_id={u_id}",headers=auth_headers)
-    delete_user_events = requests.delete(f"{HOST_CONFIG['STAGING_URL']}/event/delete?user_id={u_id}",headers=auth_headers)
+    delete_user_events = requests.delete(f"{HOST_CONFIG['STAGING_URL']}/event/delete?user_id={u_id}",headers=auth_headers, verify=False)
     logging.info("after delete user events")
     logging.info(delete_user_events.json())
     delete_user_headers = {"Authorization": DELETE_USER['DELETE_USER_TOKEN']}
