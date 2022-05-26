@@ -166,25 +166,9 @@ def delete_datastream(user_id: str=Query(), stream_name: str=Query(), start_time
         print(e)
 
 
-@app.route("/event/delete", methods=["DELETE"])
-@ValidateParameters()
-def delete_event(user_id: str=Query(), event_type: Optional[str]=Query(), event_id: Optional[str]=Query(), start_time: Optional[str]=Query(), end_time: Optional[str]=Query()):
-    logging.info("inside delete_event function")
-    auth_token = request.headers['Authorization']
-    print("in /event/delete")
-    auth_headers = {"Authorization": "{}".format(auth_token)}
-    print("sending request to: {}".format(IDENTITY_SERVER_SETTINGS['HOST_URL']+"/auth/authenticate"))
-    logging.info("sending request to: {}".format(IDENTITY_SERVER_SETTINGS['HOST_URL']+"/auth/authenticate"))
-    auth_response = requests.get(IDENTITY_SERVER_SETTINGS['HOST_URL']+"/auth/authenticate", headers=auth_headers)
-    print(auth_response.text, auth_response.status_code)
-    if auth_response.status_code == 401:
-        return Response("Unauthorized", 401)
-    args = request.args
-    # print(args)
-    delete__header = request.headers.get('DELETE_DATA', None)
-    
+def delete_events_func(request,auth_response, event_type,event_id,delete_header):
     try:
-        if event_type is None and event_id is None and delete__header is None:
+        if event_type is None and event_id is None and delete_header is None:
             return jsonify({"error": "event_id or event_type should be specified"}),400
         elif event_type is not None and event_id is not None:
             return jsonify({"error": "Either event_id or event_type should be included but not both"}),400
@@ -197,7 +181,7 @@ def delete_event(user_id: str=Query(), event_type: Optional[str]=Query(), event_
         end_time_query = request.args.get('end_time',None)
         
         model_class = generate_table_class(EVENTS_TABLE, copy.deepcopy(base_schema[EVENTS_SCHEMA]))
-        if delete__header == DELETE_USER['DELETE_USER_TOKEN']:
+        if delete_header == DELETE_USER['DELETE_USER_TOKEN']:
             delete_all_user_info_query =  model_class.__table__.delete().where( (model_class.user_id == u_id))
             result = session.execute(delete_all_user_info_query)
             total_deleted_events = result.rowcount
@@ -252,9 +236,25 @@ def delete_event(user_id: str=Query(), event_type: Optional[str]=Query(), event_
             return jsonify({"message": f"No such {event_name} found"}), 400
     except requests.exceptions.RequestException as e:
         print(e) 
-    """Receive a list of event ids to be deleted in the post request json"""
-    
 
+@app.route("/event/delete", methods=["DELETE"])
+@ValidateParameters()
+def delete_event(user_id: str=Query(), event_type: Optional[str]=Query(), event_id: Optional[str]=Query(), start_time: Optional[str]=Query(), end_time: Optional[str]=Query()):
+    logging.info("inside delete_event function")
+    auth_token = request.headers['Authorization']
+    print("in /event/delete")
+    auth_headers = {"Authorization": "{}".format(auth_token)}
+    print("sending request to: {}".format(IDENTITY_SERVER_SETTINGS['HOST_URL']+"/auth/authenticate"))
+    logging.info("sending request to: {}".format(IDENTITY_SERVER_SETTINGS['HOST_URL']+"/auth/authenticate"))
+    auth_response = requests.get(IDENTITY_SERVER_SETTINGS['HOST_URL']+"/auth/authenticate", headers=auth_headers)
+    print(auth_response.text, auth_response.status_code)
+    if auth_response.status_code == 401:
+        return Response("Unauthorized", 401)
+    # args = request.args
+    # print(args)
+    delete_header = request.headers.get('DELETE_DATA', None)
+    return delete_events_func(request,auth_response,event_type,event_id,delete_header)
+   
 @app.route("/event/update", methods=["POST"])
 def update_event():
     pass
@@ -267,7 +267,7 @@ def delete_account():
                     "DELETE_DATA": DELETE_USER['DELETE_USER_TOKEN']
                    }
     auth_response = requests.get(IDENTITY_SERVER_SETTINGS['HOST_URL']+"/auth/authenticate", headers=auth_headers)
-    
+
     if auth_response.status_code == 401:
         return jsonify({"error": "Unauthorized"}), 401
     u_id = auth_response.json()['user_id']
@@ -276,18 +276,19 @@ def delete_account():
 
     logging.info(f"{HOST_CONFIG['STAGING_URL']}/event/delete?user_id={u_id}")
     # delete_user_events = requests.delete(f"http://127.0.0.1:5000/event/delete?user_id={u_id}",headers=auth_headers)
-    delete_user_events = requests.delete(f"{HOST_CONFIG['STAGING_URL_2']}:5005/event/delete?user_id={u_id}",headers=auth_headers, verify=False)
-
+    # delete_user_events = requests.delete(f"{HOST_CONFIG['STAGING_URL_2']}:5005/event/delete?user_id={u_id}",headers=auth_headers, verify=False)
+    delete_user_events = delete_events_func(request,auth_response,None,None,DELETE_USER['DELETE_USER_TOKEN'])
+    logging.info(delete_user_events)
     # delete_user_events = requests.delete(f"{HOST_CONFIG['STAGING_URL']}/event/delete?user_id={u_id}",headers=auth_headers, verify=False)
     logging.info("after delete user events")
-    logging.info(delete_user_events.json())
+   
     delete_user_headers = {"Authorization": DELETE_USER['DELETE_USER_TOKEN']}
     deactivate_user_account = requests.delete(f"{DELETE_USER['API_ENDPOINT']}/{u_id}?sendEmail=true",headers=delete_user_headers)
-    logging.info(deactivate_user_account.json())
+   
     logging.info("deactivate user account")
-    if delete_user_events.status_code == 200 and deactivate_user_account.status_code == 204:
+    if delete_user_events[1] == 200 and deactivate_user_account.status_code == 204:
         return delete_user_account(u_id,delete_user_headers,events_found=True)
-    elif delete_user_events.status_code != 200 and  deactivate_user_account.status_code == 204:
+    elif delete_user_events[1] != 200 and  deactivate_user_account.status_code == 204:
         return delete_user_account(u_id,delete_user_headers)
     return jsonify({"error": f"Unable to delete {u_id} or user data"}), 400
 
@@ -306,5 +307,5 @@ def delete_user_account(u_id,delete_user_headers,events_found=None):
 if __name__ == "__main__":
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
     print("running server on {}:{}".format(HOST_CONFIG['HOST_URL'], HOST_CONFIG['HOST_PORT']))
-    app.run(HOST_CONFIG['HOST_URL'], port=HOST_CONFIG['HOST_PORT'], debug=True,threaded=True)#, ssl_context='adhoc')
+    app.run(HOST_CONFIG['HOST_URL'], port=HOST_CONFIG['HOST_PORT'], debug=True)#, ssl_context='adhoc')
     # app.run(debug=True)
