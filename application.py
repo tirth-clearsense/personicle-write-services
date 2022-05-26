@@ -272,6 +272,9 @@ def delete_account():
         return jsonify({"error": "Unauthorized"}), 401
     u_id = auth_response.json()['user_id']
     logging.info("here")
+    logging.info("before sending request to delete event")
+
+    logging.info(f"{HOST_CONFIG['STAGING_URL']}/event/delete?user_id={u_id}")
     # delete_user_events = requests.delete(f"http://127.0.0.1:5000/event/delete?user_id={u_id}",headers=auth_headers)
     delete_user_events = requests.delete(f"{HOST_CONFIG['STAGING_URL']}/event/delete?user_id={u_id}",headers=auth_headers)
     logging.info("after delete user events")
