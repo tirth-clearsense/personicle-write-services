@@ -16,7 +16,7 @@ from sqlalchemy import func
 from datetime import datetime
 import inflect
 import logging
-logging.basicConfig(filename='test.log', encoding='utf-8', level=logging.DEBUG)
+
 p = inflect.engine()
 
 app = Flask(__name__)
@@ -24,7 +24,7 @@ app = Flask(__name__)
 PROJ_LOC = os.path.dirname(__file__)
 EVENTS_TABLE = "personal_events"
 EVENTS_SCHEMA = "event_schema.avsc"
-
+logging.basicConfig(filename='test.log', level=logging.DEBUG)
 @app.route("/")
 def test_application():
     return Response("Write service up")
