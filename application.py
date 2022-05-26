@@ -15,6 +15,8 @@ import copy
 from sqlalchemy import func
 from datetime import datetime
 import inflect
+import logging
+logging.basicConfig(filename='test.log', encoding='utf-8', level=logging.DEBUG)
 p = inflect.engine()
 
 app = Flask(__name__)
@@ -167,10 +169,12 @@ def delete_datastream(user_id: str=Query(), stream_name: str=Query(), start_time
 @app.route("/event/delete", methods=["DELETE"])
 @ValidateParameters()
 def delete_event(user_id: str=Query(), event_type: Optional[str]=Query(), event_id: Optional[str]=Query(), start_time: Optional[str]=Query(), end_time: Optional[str]=Query()):
+    logging.info("inside delete_event function")
     auth_token = request.headers['Authorization']
     print("in /event/delete")
     auth_headers = {"Authorization": "{}".format(auth_token)}
     print("sending request to: {}".format(IDENTITY_SERVER_SETTINGS['HOST_URL']+"/auth/authenticate"))
+    logging.info("sending request to: {}".format(IDENTITY_SERVER_SETTINGS['HOST_URL']+"/auth/authenticate"))
     auth_response = requests.get(IDENTITY_SERVER_SETTINGS['HOST_URL']+"/auth/authenticate", headers=auth_headers)
     print(auth_response.text, auth_response.status_code)
     if auth_response.status_code == 401:
@@ -267,12 +271,15 @@ def delete_account():
     if auth_response.status_code == 401:
         return jsonify({"error": "Unauthorized"}), 401
     u_id = auth_response.json()['user_id']
-    print("here")
+    logging.info("here")
     # delete_user_events = requests.delete(f"http://127.0.0.1:5000/event/delete?user_id={u_id}",headers=auth_headers)
     delete_user_events = requests.delete(f"{HOST_CONFIG['STAGING_URL']}/event/delete?user_id={u_id}",headers=auth_headers)
-
+    logging.info("after delete user events")
+    logging.info(delete_user_events.json())
     delete_user_headers = {"Authorization": DELETE_USER['DELETE_USER_TOKEN']}
     deactivate_user_account = requests.delete(f"{DELETE_USER['API_ENDPOINT']}/{u_id}?sendEmail=true",headers=delete_user_headers)
+    logging.info(deactivate_user_account.json())
+    logging.info("deactivate user account")
     if delete_user_events.status_code == 200 and deactivate_user_account.status_code == 204:
         return delete_user_account(u_id,delete_user_headers,events_found=True)
     elif delete_user_events.status_code != 200 and  deactivate_user_account.status_code == 204:
@@ -280,6 +287,7 @@ def delete_account():
     return jsonify({"error": f"Unable to delete {u_id} or user data"}), 400
 
 def delete_user_account(u_id,delete_user_headers,events_found=None):
+    logging.info("inside delete user account")
     delete_user_account = requests.delete(f"{DELETE_USER['API_ENDPOINT']}/{u_id}?sendEmail=true",headers=delete_user_headers)
     if events_found:
         if delete_user_account.status_code == 204:
@@ -293,5 +301,5 @@ def delete_user_account(u_id,delete_user_headers,events_found=None):
 if __name__ == "__main__":
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
     print("running server on {}:{}".format(HOST_CONFIG['HOST_URL'], HOST_CONFIG['HOST_PORT']))
-    app.run(HOST_CONFIG['HOST_URL'], port=HOST_CONFIG['HOST_PORT'], debug=True)#, ssl_context='adhoc')
-    # app.run(debug=True)
+    # app.run(HOST_CONFIG['HOST_URL'], port=HOST_CONFIG['HOST_PORT'], debug=True)#, ssl_context='adhoc')
+    app.run(debug=True)
