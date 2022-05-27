@@ -43,8 +43,8 @@ def upload_event():
     auth_token = request.headers['Authorization']
     auth_headers = {"Authorization": "{}".format(auth_token)}
     print(auth_headers)
-    print("sending request to: {}".format(IDENTITY_SERVER_SETTINGS['HOST_URL']+'/authenticate'))
-    auth_response = requests.get(IDENTITY_SERVER_SETTINGS['HOST_URL']+'/authenticate', headers=auth_headers)
+    print("sending request to: {}".format(IDENTITY_SERVER_SETTINGS['PERSONICLE_AUTH_API_ENDPOINT']))
+    auth_response = requests.get(IDENTITY_SERVER_SETTINGS['PERSONICLE_AUTH_API_ENDPOINT'], headers=auth_headers)
     print(auth_response.text, auth_response.status_code)
     if auth_response.status_code != requests.codes.ok or json.loads(auth_response.text).get("message", False)== False:
         return Response("Unauthorised access token", 401)
