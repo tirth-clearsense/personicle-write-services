@@ -149,7 +149,11 @@ spec:
             secretKeyRef:
               name: secrets
               key: DATA_DICTIONARY_SERVER_ENDPOINT
-               
+        - name: PERSONICLE_AUTH_API_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: secrets
+              key: PERSONICLE_AUTH_API_ENDPOINT
 ---
 apiVersion: v1
 kind: Service
