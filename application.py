@@ -275,7 +275,7 @@ def delete_account():
     logging.info("here")
     logging.info("before sending request to delete event")
 
-    logging.info(f"{HOST_CONFIG['STAGING_URL']}/event/delete?user_id={u_id}")
+#     logging.info(f"{HOST_CONFIG['STAGING_URL']}/event/delete?user_id={u_id}")
     # delete_user_events = requests.delete(f"http://127.0.0.1:5000/event/delete?user_id={u_id}",headers=auth_headers)
     # delete_user_events = requests.delete(f"{HOST_CONFIG['STAGING_URL_2']}:5005/event/delete?user_id={u_id}",headers=auth_headers, verify=False)
     delete_user_events = delete_events_func(request,auth_response,None,None,DELETE_USER['DELETE_USER_TOKEN'])
