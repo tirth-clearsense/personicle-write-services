@@ -66,6 +66,9 @@ else:
             "HOST": os.environ['CREDENTIALS_DB_HOST'],
             "NAME": os.environ['CREDENTIALS_DB_NAME']
         }
+        PERSONICLE_SCHEMA_API = {
+             "MATCH_DICTIONARY_ENDPOINT": os.environ['DATA_DICTIONARY_SERVER_ENDPOINT']
+        }
     except KeyError as e:
         print("failed to create configs for the application")
         print("missing configuration {} from environment variables".format(e))
