@@ -267,7 +267,7 @@ def delete_account():
     auth_headers = {"Authorization": "{}".format(auth_token),
                     "DELETE_DATA": DELETE_USER['DELETE_USER_TOKEN']
                    }
-    auth_response = requests.get(IDENTITY_SERVER_SETTINGS['HOST_URL']+"/auth/authenticate", headers=auth_headers)
+    auth_response = requests.get(IDENTITY_SERVER_SETTINGS['PERSONICLE_AUTH_API_ENDPOINT'], headers=auth_headers)
 
     if auth_response.status_code == 401:
         return jsonify({"error": "Unauthorized"}), 401
