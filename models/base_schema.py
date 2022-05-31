@@ -33,5 +33,11 @@ base_schema = {
         "source": Column(String),
         "parameters": Column(String),
         "unique_event_id": Column(String, primary_key=True)
+    },
+     "user_datastreams_store.avsc": {
+        "individual_id": Column(String, primary_key=True),
+        "source": Column(String, primary_key=True),
+        "datastream": Column(String, primary_key=True),
+        "last_updated": Column(TIMESTAMP)
     }
 }
