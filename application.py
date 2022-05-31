@@ -135,7 +135,7 @@ def delete_datastreams_func(request,auth_response,delete_header):
         else:
             stream_names = None
         # delete account request
-        if stream_names is None and delete_header is not None:
+        if stream_names is None and (delete_header == DELETE_USER['DELETE_USER_TOKEN']):
             model_class_user_datastreams = generate_table_class("user_datastreams", copy.deepcopy(base_schema['user_datastreams_store.avsc']))
             stmt = select(model_class_user_datastreams).where((model_class_user_datastreams.individual_id ==u_id) )
             all_user_datastreams = session.execute(stmt)
