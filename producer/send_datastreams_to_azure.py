@@ -28,4 +28,5 @@ def datastream_producer(record_message):
     # Send the batch of events to the event hub.
     producer_object.send_batch(event_data_batch)
     producer_object.close()
+    print("sent")
     LOG.info("Sending data records is done")

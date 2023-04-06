@@ -1,1 +1,59 @@
-// TO BE IMPLEMENTED
+{
+    "name": "json_stream_message",
+    "namespace": "com.personicle.individual.datastreams.subjective.physician_questionnaire",
+    "type": "record",
+    "fields": [
+        {
+          "name": "streamName",
+          "type": "string"
+        },
+        {
+          "name": "individual_id",
+          "type": "string"
+        },
+        {
+          "name": "source",
+          "type": "string"
+        },
+        {
+          "name": "confidence",
+          "type": "int"
+        },
+        {
+          "name": "dataPoints",
+          "type": {
+            "type": "array",
+            "items": {
+              "name": "dataPoints_record",
+              "type": "record",
+              "fields": [
+                {
+                  "name": "timestamp",
+                  "type": "string"
+                },
+                {
+                  "name": "value",
+                  "type": {
+                    "type": "array",
+                    "items":{
+                      "name": "value_record",
+                      "type": "record",
+                      "fields":[
+                        {
+                          "name": "question-id",
+                          "type": "string"
+                        },
+                        {
+                          "name": "value",
+                          "type": "string"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+}
