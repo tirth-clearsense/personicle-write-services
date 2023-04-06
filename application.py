@@ -371,5 +371,5 @@ if __name__ == "__main__":
     print("running server on {}:{}".format(HOST_CONFIG['HOST_URL'], HOST_CONFIG['HOST_PORT']))
 
     # app.run(HOST_CONFIG['HOST_URL'], port=HOST_CONFIG['HOST_PORT'], debug=True)#, ssl_context='adhoc')/
-    app.run(debug=True,port=5005)
+    app.run()
    
