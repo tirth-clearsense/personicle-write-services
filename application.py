@@ -44,6 +44,8 @@ def upload_event():
     auth_headers = {"Authorization": "{}".format(auth_token)}
     print(auth_headers)
     print("sending request to: {}".format(IDENTITY_SERVER_SETTINGS['PERSONICLE_AUTH_API_ENDPOINT']))
+    print("event received")
+    print(request.json)
     auth_response = requests.get(IDENTITY_SERVER_SETTINGS['PERSONICLE_AUTH_API_ENDPOINT'], headers=auth_headers)
     print(auth_response.text, auth_response.status_code)
     if auth_response.status_code != requests.codes.ok or json.loads(auth_response.text).get("message", False)== False:
@@ -371,5 +373,5 @@ if __name__ == "__main__":
     print("running server on {}:{}".format(HOST_CONFIG['HOST_URL'], HOST_CONFIG['HOST_PORT']))
 
     # app.run(HOST_CONFIG['HOST_URL'], port=HOST_CONFIG['HOST_PORT'], debug=True)#, ssl_context='adhoc')/
-    app.run()
+    app.run(debug=True,port=5005)
    
